@@ -1,0 +1,9 @@
+{
+  "appId": "com.surveyhelper.pro",
+  "appName": "Survey Helper Pro",
+  "webDir": "www",
+  "server": {
+    "iosScheme": "capacitor"
+  },
+  "bundledWebRuntime": false
+}

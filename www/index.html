@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Survey Helper Pro</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #f4f7fb;
+        color: #1c2330;
+      }
+      .app-shell {
+        width: min(680px, calc(100vw - 32px));
+        background: #ffffff;
+        border: 1px solid #dfe7f3;
+        border-radius: 16px;
+        padding: 32px 24px;
+        box-shadow: 0 10px 28px rgba(25, 38, 72, 0.08);
+      }
+      .status {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .details {
+        font-size: 0.96rem;
+        color: #4d5d78;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <div id="status" class="status">Checking proj4…</div>
+      <div id="details" class="details">The web app will verify that proj4 loads correctly from the generated www/proj4.js bundle.</div>
+    </div>
+
+    <script src="./proj4.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const statusNode = document.getElementById('status');
+        const detailsNode = document.getElementById('details');
+
+        if (window.proj4 && typeof window.proj4.defs === 'function') {
+          statusNode.textContent = 'proj4 loaded successfully';
+          detailsNode.textContent = 'proj4 was loaded from ./proj4.js and is ready for geospatial calculations.';
+          return;
+        }
+
+        statusNode.textContent = 'proj4 failed to load';
+        detailsNode.textContent = 'The generated file www/proj4.js was not found or did not initialize correctly.';
+      });
+    </script>
+  </body>
+</html>

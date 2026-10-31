@@ -1,0 +1,20 @@
+{
+  "name": "survey-helper-pro",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/copy-proj4.mjs && node scripts/verify-build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "ios:add": "npx cap add ios",
+    "ios:sync": "npx cap sync ios",
+    "validate:build": "node scripts/verify-build.mjs"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "proj4": "2.12.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}
