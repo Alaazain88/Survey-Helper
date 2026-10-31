@@ -1,63 +1,249 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Survey Helper Pro</title>
-    <style>
-      :root {
-        color-scheme: light;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #f4f7fb;
-        color: #1c2330;
-      }
-      .app-shell {
-        width: min(680px, calc(100vw - 32px));
-        background: #ffffff;
-        border: 1px solid #dfe7f3;
-        border-radius: 16px;
-        padding: 32px 24px;
-        box-shadow: 0 10px 28px rgba(25, 38, 72, 0.08);
-      }
-      .status {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      .details {
-        font-size: 0.96rem;
-        color: #4d5d78;
-        line-height: 1.5;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app-shell">
-      <div id="status" class="status">Checking proj4…</div>
-      <div id="details" class="details">The web app will verify that proj4 loads correctly from the generated www/proj4.js bundle.</div>
-    </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102b4e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Survey Helper">
+  <title>Survey Helper Pro</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f1f5f9;
+      color: #15243b;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      background: linear-gradient(135deg, #102b4e, #087f9c);
+      color: white;
+      padding: 48px 20px 26px;
+      text-align: center;
+    }
+    header h1 { margin: 0 0 7px; font-size: 27px; }
+    header p { margin: 0; opacity: .85; font-size: 14px; }
+    main { max-width: 650px; margin: auto; padding: 16px; }
+    .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-bottom: 15px; }
+    button {
+      border: none;
+      border-radius: 11px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab { background: white; color: #12375b; }
+    .tab.active { background: #087f9c; color: white; }
+    .panel {
+      display: none;
+      background: white;
+      border-radius: 17px;
+      padding: 19px;
+      box-shadow: 0 4px 20px #102b4e12;
+    }
+    .panel.active { display: block; }
+    h2 { margin: 0 0 8px; font-size: 20px; }
+    .hint { color: #64748b; font-size: 13px; line-height: 1.6; }
+    label { display: block; margin-top: 14px; font-size: 14px; font-weight: 600; }
+    input, select, textarea {
+      width: 100%;
+      margin-top: 6px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 16px;
+      background: #fff;
+      color: #15243b;
+    }
+    textarea { min-height: 105px; }
+    .primary { background: #087f9c; color: white; width: 100%; margin-top: 17px; }
+    .secondary { background: #e6f3f7; color: #075d74; width: 100%; margin-top: 10px; }
+    .result {
+      margin-top: 17px;
+      padding: 15px;
+      border-radius: 11px;
+      background: #e9f7f6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+    .error { background: #fee2e2; color: #991b1b; }
+    footer { text-align: center; color: #64748b; padding: 20px; font-size: 12px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>📐 Survey Helper Pro</h1>
+  <p>DLTM • WGS84 • Distance • Area • Elevation</p>
+</header>
+<main>
+  <nav class="tabs">
+    <button class="tab active" onclick="showTab('coordinates',this)">🌍 Coordinates</button>
+    <button class="tab" onclick="showTab('distance',this)">📏 Distance</button>
+    <button class="tab" onclick="showTab('area',this)">⬡ Area</button>
+    <button class="tab" onclick="showTab('elevation',this)">⛰ Elevation</button>
+  </nav>
 
-    <script src="./proj4.js"></script>
-    <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        const statusNode = document.getElementById('status');
-        const detailsNode = document.getElementById('details');
+  <section class="panel active" id="coordinates">
+    <h2>Coordinate Converter</h2>
+    <p class="hint">Convert between Dubai Local Transverse Mercator (EPSG:3997) and WGS84.</p>
+    <label>Conversion direction</label>
+    <select id="direction" onchange="changeDirection()">
+      <option value="toWgs">DLTM → WGS84</option>
+      <option value="toDltm">WGS84 → DLTM</option>
+    </select>
+    <label id="labelA">Easting (m)</label>
+    <input id="coordA" type="number" step="any" value="498368.856">
+    <label id="labelB">Northing (m)</label>
+    <input id="coordB" type="number" step="any" value="2794508.812">
+    <button class="primary" onclick="convertCoordinates()">Convert Coordinates</button>
+    <div class="result" id="coordinateResult">Results will appear here.</div>
+    <button class="secondary" onclick="copyResult('coordinateResult')">Copy Result</button>
+  </section>
 
-        if (window.proj4 && typeof window.proj4.defs === 'function') {
-          statusNode.textContent = 'proj4 loaded successfully';
-          detailsNode.textContent = 'proj4 was loaded from ./proj4.js and is ready for geospatial calculations.';
-          return;
-        }
+  <section class="panel" id="distance">
+    <h2>Distance Calculator</h2>
+    <p class="hint">Calculate 2D and 3D distances using projected coordinates in metres.</p>
+    <label>Point 1 Easting</label><input id="x1" type="number" step="any" placeholder="E1">
+    <label>Point 1 Northing</label><input id="y1" type="number" step="any" placeholder="N1">
+    <label>Point 1 Height (m)</label><input id="z1" type="number" step="any" value="0">
+    <label>Point 2 Easting</label><input id="x2" type="number" step="any" placeholder="E2">
+    <label>Point 2 Northing</label><input id="y2" type="number" step="any" placeholder="N2">
+    <label>Point 2 Height (m)</label><input id="z2" type="number" step="any" value="0">
+    <button class="primary" onclick="calculateDistance()">Calculate Distance</button>
+    <div class="result" id="distanceResult">Results will appear here.</div>
+  </section>
 
-        statusNode.textContent = 'proj4 failed to load';
-        detailsNode.textContent = 'The generated file www/proj4.js was not found or did not initialize correctly.';
+  <section class="panel" id="area">
+    <h2>Area Calculator</h2>
+    <p class="hint">Enter polygon vertices in metres, one Easting,Northing pair per line. At least 3 points required.</p>
+    <label>Polygon Coordinates</label>
+    <textarea id="polygon" placeholder="500000, 2800000&#10;500100, 2800000&#10;500100, 2800100&#10;500000, 2800100"></textarea>
+    <button class="primary" onclick="calculateArea()">Calculate Area</button>
+    <div class="result" id="areaResult">Results will appear here.</div>
+  </section>
+
+  <section class="panel" id="elevation">
+    <h2>Elevation Tools</h2>
+    <p class="hint">Calculate orthometric height using a known geoid undulation: H = h − N.</p>
+    <label>Ellipsoidal Height h (m)</label>
+    <input id="ellipsoid" type="number" step="any" placeholder="34.000">
+    <label>Geoid Undulation N (m)</label>
+    <input id="geoid" type="number" step="any" placeholder="Enter EGM2008 N value">
+    <button class="primary" onclick="calculateElevation()">Calculate Orthometric Height</button>
+    <div class="result" id="elevationResult">Results will appear here.</div>
+    <p class="hint">Important: This tool does not automatically calculate EGM2008 undulation. Use a verified geoid value for the point.</p>
+  </section>
+</main>
+<footer>Survey Helper Pro • Geospatial Surveying Tools</footer>
+
+<script src="./proj4.js"></script>
+<script src="./js/coordinate-converter.js"></script>
+<script>
+  function showTab(id, button) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    button.classList.add('active');
+  }
+
+  function value(id) {
+    const input = document.getElementById(id);
+    if (input.value.trim() === '') throw Error('Please complete all required fields.');
+    const n = Number(input.value);
+    if (!Number.isFinite(n)) throw Error('Please enter valid numbers.');
+    return n;
+  }
+
+  function output(id, text, error = false) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.classList.toggle('error', error);
+  }
+
+  function changeDirection() {
+    const reverse = document.getElementById('direction').value === 'toDltm';
+    document.getElementById('labelA').textContent = reverse ? 'Latitude (decimal degrees)' : 'Easting (m)';
+    document.getElementById('labelB').textContent = reverse ? 'Longitude (decimal degrees)' : 'Northing (m)';
+    document.getElementById('coordA').value = '';
+    document.getElementById('coordB').value = '';
+    output('coordinateResult', 'Enter coordinates to convert.');
+  }
+
+  function formatDms(deg, latitude) {
+    const dir = latitude ? (deg < 0 ? 'S' : 'N') : (deg < 0 ? 'W' : 'E');
+    const a = Math.abs(deg);
+    let d = Math.floor(a);
+    let m = Math.floor((a - d) * 60);
+    let s = Number(((a - d - m / 60) * 3600).toFixed(3));
+    if (s >= 60) { s = 0; m++; }
+    if (m >= 60) { m = 0; d++; }
+    return `${d}° ${m}' ${s.toFixed(3)}" ${dir}`;
+  }
+
+  function convertCoordinates() {
+    try {
+      const geo = window.SurveyHelper && window.SurveyHelper.geo;
+      if (!geo) throw Error('Coordinate conversion module not loaded.');
+      const a = value('coordA'), b = value('coordB');
+      let text;
+      if (document.getElementById('direction').value === 'toWgs') {
+        const r = geo.epsg3997ToWgs84(a, b);
+        text = `Latitude: ${r.latitude.toFixed(8)}°\nLongitude: ${r.longitude.toFixed(8)}°\n\nLatitude DMS: ${formatDms(r.latitude, true)}\nLongitude DMS: ${formatDms(r.longitude, false)}`;
+      } else {
+        const r = geo.wgs84ToEpsg3997(a, b);
+        text = `Easting: ${r.easting.toFixed(3)} m\nNorthing: ${r.northing.toFixed(3)} m`;
+      }
+      output('coordinateResult', text);
+    } catch (e) { output('coordinateResult', e.message, true); }
+  }
+
+  function calculateDistance() {
+    try {
+      const dx = value('x2') - value('x1');
+      const dy = value('y2') - value('y1');
+      const dz = value('z2') - value('z1');
+      const horizontal = Math.hypot(dx, dy);
+      const spatial = Math.hypot(dx, dy, dz);
+      output('distanceResult', `2D Distance: ${horizontal.toFixed(3)} m\n3D Distance: ${spatial.toFixed(3)} m\nHeight Difference: ${dz.toFixed(3)} m`);
+    } catch (e) { output('distanceResult', e.message, true); }
+  }
+
+  function calculateArea() {
+    try {
+      const lines = document.getElementById('polygon').value.trim().split(/\n+/);
+      const points = lines.map(line => {
+        const parts = line.trim().split(/[,\s;]+/).map(Number);
+        if (parts.length !== 2 || !parts.every(Number.isFinite)) throw Error('Use Easting,Northing on each line.');
+        return parts;
       });
-    </script>
-  </body>
+      if (points.length < 3) throw Error('Enter at least 3 polygon vertices.');
+      let twiceArea = 0, perimeter = 0;
+      for (let i = 0; i < points.length; i++) {
+        const a = points[i], b = points[(i + 1) % points.length];
+        twiceArea += a[0] * b[1] - b[0] * a[1];
+        perimeter += Math.hypot(b[0] - a[0], b[1] - a[1]);
+      }
+      const area = Math.abs(twiceArea) / 2;
+      output('areaResult', `Area: ${area.toFixed(3)} m²\nArea: ${(area / 10000).toFixed(5)} hectares\nPerimeter: ${perimeter.toFixed(3)} m`);
+    } catch (e) { output('areaResult', e.message, true); }
+  }
+
+  function calculateElevation() {
+    try {
+      const h = value('ellipsoid'), N = value('geoid');
+      output('elevationResult', `Orthometric Height (H): ${(h - N).toFixed(3)} m\nEllipsoidal Height (h): ${h.toFixed(3)} m\nGeoid Undulation (N): ${N.toFixed(3)} m`);
+    } catch (e) { output('elevationResult', e.message, true); }
+  }
+
+  async function copyResult(id) {
+    const text = document.getElementById(id).textContent;
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) { alert('Copy unavailable. Please select and copy the result manually.'); }
+  }
+</script>
+</body>
 </html>
+
