@@ -246,6 +246,16 @@
     catch (e) { alert('Copy unavailable. Please select and copy the result manually.'); }
   }
 </script>
+  
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .catch(error => console.error("Service Worker:", error));
+    });
+  }
+
 </body>
+  
 </html>
 
